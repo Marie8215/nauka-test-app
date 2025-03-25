@@ -1,7 +1,10 @@
-import { Table } from "antd";
+import { Segmented, Space, Table } from "antd";
 import { employees } from "../../mockData/employeesMock";
+import { useState } from "react";
 
 export const EmployeesPage = (props) => {
+  const [isTreeView, setIsTreeView] = useState(true);
+
   const columns = [
     {
       title: "Имя",
@@ -33,6 +36,24 @@ export const EmployeesPage = (props) => {
     return result;
   };
 
+  const getFlatData = (el) => {
+    let result = [];
+
+    if (el.type === 'user') {
+      result.push({
+        name: el.name,
+        salary: el.salary,
+      })
+
+    } else {
+      for (let child of el.childs) {
+        result = result.concat(getFlatData(child));
+      }
+    }
+
+    return result;
+  }
+
   const sumSalary = (el) => {
     let salaries = 0;
 
@@ -51,24 +72,46 @@ export const EmployeesPage = (props) => {
     totalSalary += sumSalary(employee);
   }
 
-  const data = employees.map(adaptData);
+  let data = []
+  if (isTreeView) {
+    data = employees.map(adaptData);
+  } else {
+    for (let employee of employees) {
+      data = data.concat(getFlatData(employee));
+    }
+
+    data.forEach((x, i) => x.key = i.toString());
+  }
+
 
   return (
     <>
-      <Table
-        dataSource={data}
-        columns={columns}
-        bordered
-        pagination={false}
-        summary={() => (
-          <Table.Summary fixed>
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0}>Итого </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>{totalSalary}</Table.Summary.Cell>
-            </Table.Summary.Row>
-          </Table.Summary>
-        )}
-      ></Table>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        <Space>
+          <Segmented
+            value={isTreeView}
+            onChange={setIsTreeView}
+            options={[
+              { label: "Древовидная", value: true },
+              { label: "Плоская", value: false },
+            ]}
+          />
+        </Space>
+        <Table
+          dataSource={data}
+          columns={columns}
+          bordered
+          pagination={false}
+          summary={() => (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}>Итого </Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>{totalSalary}</Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          )}
+        ></Table>
+      </Space>
     </>
   );
 };
