@@ -1,52 +1,49 @@
 import { Segmented, Space, Table } from "antd";
 import { useMemo, useState } from "react";
 
-const prepareData = (data, isTreeView, parentKey = "") => {
-  let preparedData = [];
+const prepareData = (data, parentKey = "") => {
+  let flatData = [];
+  let treeData = [];
   let totalSalary = 0;
 
   for (let i = 0; i < data.length; i++) {
     const element = data[i];
-    const currentKey = parentKey + i;
+    const currentKey = "" + parentKey + i;
 
     if (element.type === "user") {
-      preparedData.push({
+
+      const dataElement = {
         key: currentKey,
         ...element,
-      });
+      };
+
+      flatData.push(dataElement);
+      treeData.push(dataElement);
 
       totalSalary += element.salary;
     } else {
-      const preparedChildren = prepareData(
-        element.childs,
-        isTreeView,
-        currentKey
-      );
+      const preparedChildren = prepareData(element.childs, currentKey);
       totalSalary += preparedChildren.totalSalary;
 
-      if (isTreeView) {
-        preparedData.push({
-          key: currentKey,
-          type: element.type,
-          name: element.name,
-          children: preparedChildren.data,
-          salary: preparedChildren.totalSalary,
-        });
-      } else {
-        preparedData = preparedData.concat(preparedChildren.data);
-      }
+      treeData.push({
+        key: currentKey,
+        type: element.type,
+        name: element.name,
+        children: preparedChildren.treeData,
+        salary: preparedChildren.totalSalary,
+      });
+      flatData = flatData.concat(preparedChildren.flatData);
     }
   }
 
-  return { data: preparedData, totalSalary };
+  return { flatData, treeData, totalSalary };
 };
 
 export const EmployeesPage = ({ employees }) => {
   const [isTreeView, setIsTreeView] = useState(true);
 
-  const treeData = useMemo(() => prepareData(employees, true), [employees]);
-  const flatData = useMemo(() => prepareData(employees, false), [employees]);
-  const { data, totalSalary } = isTreeView ? treeData : flatData;
+  const { treeData, flatData, totalSalary } = useMemo(() => prepareData(employees), [employees]);
+  const data = isTreeView ? treeData : flatData;
 
   const tableColumns = [
     {
