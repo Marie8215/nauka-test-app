@@ -1,0 +1,27 @@
+.darkTheme {
+    background-color: rgb(38, 39, 52);
+    color: aliceblue;
+  }
+  
+  .darkTheme * {
+    background-color: rgb(51, 51, 51) !important;
+    color: aliceblue !important;
+    border-color: rgb(70, 70, 70) !important;
+  }
+  
+  .lightTheme {
+    background-color: aliceblue;
+    color: black;
+  }
+  
+  .lightTheme * {
+    background-color: white !important;
+    color: black !important;
+    border-color: lightgray !important;
+  }
+  
+  .buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  

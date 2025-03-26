@@ -1,9 +1,16 @@
 import { Segmented, Space, Table } from "antd";
 import { employees } from "../../mockData/employeesMock";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { ThemeContext } from "../theme-context/theme-context";
+import styles from "./employeesPage.module.css";
 
 export const EmployeesPage = (props) => {
   const [isTreeView, setIsTreeView] = useState(true);
+  const { theme, setTheme } = useContext(ThemeContext);
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
 
   const columns = [
     {
@@ -85,7 +92,12 @@ export const EmployeesPage = (props) => {
 
 
   return (
-    <>
+    <div className={theme === "dark" ? styles.darkTheme : styles.lightTheme}>
+    <div className={styles.buttonContainer}>
+      <button onClick={toggleTheme}>
+        Сменить тему
+      </button>
+    </div>
       <Space direction="vertical" style={{ width: "100%" }}>
         <Space>
           <Segmented
@@ -112,6 +124,6 @@ export const EmployeesPage = (props) => {
           )}
         ></Table>
       </Space>
-    </>
+    </div>
   );
 };
