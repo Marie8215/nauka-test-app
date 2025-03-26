@@ -1,13 +1,12 @@
 import { Segmented, Space, Table } from "antd";
-import { employees } from "../../mockData/employeesMock";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const prepareTreeData = (data, parentKey = "") => {
   const preparedData = [];
   let totalSalary = 0;
 
   for (let i = 0; i < data.length; i++) {
-    let element = data[i];
+    const element = data[i];
     const currentKey = parentKey + i;
 
     if (element.type === "user") {
@@ -18,7 +17,7 @@ const prepareTreeData = (data, parentKey = "") => {
 
       totalSalary += element.salary;
     } else {
-      let preparedChildren = prepareTreeData(element.childs, currentKey);
+      const preparedChildren = prepareTreeData(element.childs, currentKey);
       totalSalary += preparedChildren.totalSalary;
 
       preparedData.push({
@@ -35,7 +34,7 @@ const prepareTreeData = (data, parentKey = "") => {
 };
 
 const prepareFlatData = (data, parentKey = "") => {
-  let result = [];
+  let preparedData = [];
   let totalSalary = 0;
 
   for (let i = 0; i < data.length; i++) {
@@ -43,23 +42,35 @@ const prepareFlatData = (data, parentKey = "") => {
     const currentKey = parentKey + i;
 
     if (element.type === "user") {
-      result.push({
+      preparedData.push({
         key: currentKey,
         ...element,
       });
+      
       totalSalary += element.salary;
     } else {
       const preparedChildren = prepareFlatData(element.childs, currentKey);
-      result = result.concat(preparedChildren.data);
       totalSalary += preparedChildren.totalSalary;
+
+      preparedData = preparedData.concat(preparedChildren.data);
     }
   }
 
-  return { data: result, totalSalary };
+  return { data: preparedData, totalSalary };
 };
 
-export const EmployeesPage = () => {
+export const EmployeesPage = ({employees}) => {
   const [isTreeView, setIsTreeView] = useState(true);
+
+  const treeData = useMemo(
+    () => prepareTreeData(employees),
+    [employees]
+  );
+
+  const flatData = useMemo(
+    () => prepareFlatData(employees),
+    [employees]
+  );
 
   const tableColumns = [
     {
@@ -71,12 +82,17 @@ export const EmployeesPage = () => {
       title: "Заработная плата",
       dataIndex: "salary",
       key: "salary",
+      render: (text, record) => {
+        return record.type !== "user" ? (
+          <span style={{ color: "#afafaf" }}>{text}</span>
+        ) : (
+          text
+        );
+      },
     },
   ];
 
-  let { data, totalSalary } = isTreeView
-    ? prepareTreeData(employees)
-    : prepareFlatData(employees);
+  let { data, totalSalary } = isTreeView ? treeData : flatData;
 
   return (
     <>
