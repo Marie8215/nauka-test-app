@@ -72,6 +72,7 @@ export const EmployeesPage = ({ employees }) => {
     <>
       <Space direction="vertical" style={{ width: "100%" }}>
         <Space>
+          Структура
           <Segmented
             value={isTreeView}
             onChange={setIsTreeView}
