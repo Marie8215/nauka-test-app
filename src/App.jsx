@@ -1,14 +1,15 @@
-import styles from "./App.module.css";
 import { EmployeesPage } from "./components/employeesPage/employeesPage";
 import "normalize.css";
+import { ThemeContextProvider } from "./components/theme-context/theme-context-provider";
+import { Layout } from "./components/layout/layout";
 
 function App() {
   return (
-    <>
-      <div className={styles.layout}>
-        <EmployeesPage></EmployeesPage>
-      </div>
-    </>
+    <ThemeContextProvider>
+      <Layout>
+        <EmployeesPage />
+      </Layout>
+    </ThemeContextProvider>
   );
 }
 

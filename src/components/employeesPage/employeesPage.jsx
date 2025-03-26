@@ -2,7 +2,7 @@ import { Segmented, Space, Table } from "antd";
 import { employees } from "../../mockData/employeesMock";
 import { useState } from "react";
 
-export const EmployeesPage = (props) => {
+export const EmployeesPage = () => {
   const [isTreeView, setIsTreeView] = useState(true);
 
   const columns = [
@@ -39,12 +39,11 @@ export const EmployeesPage = (props) => {
   const getFlatData = (el) => {
     let result = [];
 
-    if (el.type === 'user') {
+    if (el.type === "user") {
       result.push({
         name: el.name,
         salary: el.salary,
-      })
-
+      });
     } else {
       for (let child of el.childs) {
         result = result.concat(getFlatData(child));
@@ -52,7 +51,7 @@ export const EmployeesPage = (props) => {
     }
 
     return result;
-  }
+  };
 
   const sumSalary = (el) => {
     let salaries = 0;
@@ -72,7 +71,7 @@ export const EmployeesPage = (props) => {
     totalSalary += sumSalary(employee);
   }
 
-  let data = []
+  let data = [];
   if (isTreeView) {
     data = employees.map(adaptData);
   } else {
@@ -80,9 +79,8 @@ export const EmployeesPage = (props) => {
       data = data.concat(getFlatData(employee));
     }
 
-    data.forEach((x, i) => x.key = i.toString());
+    data.forEach((x, i) => (x.key = i.toString()));
   }
-
 
   return (
     <>
