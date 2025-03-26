@@ -2,10 +2,66 @@ import { Segmented, Space, Table } from "antd";
 import { employees } from "../../mockData/employeesMock";
 import { useState } from "react";
 
+const prepareTreeData = (data, parentKey = "") => {
+  const preparedData = [];
+  let totalSalary = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    let element = data[i];
+    const currentKey = parentKey + i;
+
+    if (element.type === "user") {
+      preparedData.push({
+        key: currentKey,
+        ...element,
+      });
+
+      totalSalary += element.salary;
+    } else {
+      let preparedChildren = prepareTreeData(element.childs, currentKey);
+      totalSalary += preparedChildren.totalSalary;
+
+      preparedData.push({
+        key: currentKey,
+        type: element.type,
+        name: element.name,
+        children: preparedChildren.data,
+        salary: preparedChildren.totalSalary,
+      });
+    }
+  }
+
+  return { data: preparedData, totalSalary };
+};
+
+const prepareFlatData = (data, parentKey = "") => {
+  let result = [];
+  let totalSalary = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    const element = data[i];
+    const currentKey = parentKey + i;
+
+    if (element.type === "user") {
+      result.push({
+        key: currentKey,
+        ...element,
+      });
+      totalSalary += element.salary;
+    } else {
+      const preparedChildren = prepareFlatData(element.childs, currentKey);
+      result = result.concat(preparedChildren.data);
+      totalSalary += preparedChildren.totalSalary;
+    }
+  }
+
+  return { data: result, totalSalary };
+};
+
 export const EmployeesPage = () => {
   const [isTreeView, setIsTreeView] = useState(true);
 
-  const columns = [
+  const tableColumns = [
     {
       title: "Имя",
       dataIndex: "name",
@@ -18,69 +74,9 @@ export const EmployeesPage = () => {
     },
   ];
 
-  const adaptData = (element, i) => {
-    let result = {
-      name: element.name,
-      salary: element.salary,
-      key: i.toString(),
-    };
-
-    if (element.type === "user") {
-      return result;
-    }
-
-    let children = element.childs?.map((el, k) => adaptData(el, "" + i + k)); // + sumSalary
-
-    result.children = children;
-
-    return result;
-  };
-
-  const getFlatData = (el) => {
-    let result = [];
-
-    if (el.type === "user") {
-      result.push({
-        name: el.name,
-        salary: el.salary,
-      });
-    } else {
-      for (let child of el.childs) {
-        result = result.concat(getFlatData(child));
-      }
-    }
-
-    return result;
-  };
-
-  const sumSalary = (el) => {
-    let salaries = 0;
-
-    if (!el.childs) {
-      salaries += el.salary;
-    } else {
-      for (let child of el.childs) {
-        salaries += sumSalary(child);
-      }
-    }
-    return salaries;
-  };
-
-  let totalSalary = 0;
-  for (let employee of employees) {
-    totalSalary += sumSalary(employee);
-  }
-
-  let data = [];
-  if (isTreeView) {
-    data = employees.map(adaptData);
-  } else {
-    for (let employee of employees) {
-      data = data.concat(getFlatData(employee));
-    }
-
-    data.forEach((x, i) => (x.key = i.toString()));
-  }
+  let { data, totalSalary } = isTreeView
+    ? prepareTreeData(employees)
+    : prepareFlatData(employees);
 
   return (
     <>
@@ -97,13 +93,13 @@ export const EmployeesPage = () => {
         </Space>
         <Table
           dataSource={data}
-          columns={columns}
+          columns={tableColumns}
           bordered
           pagination={false}
           summary={() => (
             <Table.Summary fixed>
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}>Итого </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}>Итого</Table.Summary.Cell>
                 <Table.Summary.Cell index={1}>{totalSalary}</Table.Summary.Cell>
               </Table.Summary.Row>
             </Table.Summary>
